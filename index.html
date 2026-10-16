@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survei Evaluasi Psikologi & Kepribadian Diri</title>
+    <!-- Library untuk efek konfeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Latar Belakang Bergerak (Animated Gradient) */
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Container Card */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 10%;
+            background: linear-gradient(90deg, #007bff, #00d2ff);
+            transition: width 0.4s ease;
+        }
+
+        /* Form Survey Formal */
+        h2 {
+            font-size: 1.2rem;
+            color: #222;
+            margin-bottom: 6px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .question {
+            display: none;
+        }
+
+        .question.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .options label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        .options label:hover {
+            background: #eef5ff;
+            border-color: #007bff;
+        }
+
+        button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0,123,255,0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,123,255,0.4);
+        }
+
+        /* Tampilan Surprise Ultah (Pop Up) */
+        #birthday-card {
+            display: none;
+            text-align: center;
+            animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .bday-title {
+            font-size: 1.8rem;
+            color: #ff3366;
+            margin-bottom: 10px;
+            font-weight: 800;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .name {
+            font-size: 1.5rem;
+            color: #2ed573;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .message {
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            background: #fff0f3;
+            padding: 18px;
+            border-radius: 12px;
+            border-left: 5px solid #ff3366;
+            text-align: left;
+        }
+
+        .emoji {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            animation: bounce 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Hiasan Balon Melayang */
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            opacity: 0.7;
+            animation: floatUp 8s infinite linear;
+            display: none;
+            z-index: 1;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Balon Hiasan Background -->
+    <div class="balloon" style="left: 10%; animation-delay: 0s; font-size: 40px;">🎈</div>
+    <div class="balloon" style="left: 30%; animation-delay: 2s; font-size: 50px;">🎂</div>
+    <div class="balloon" style="left: 50%; animation-delay: 4s; font-size: 35px;">🎁</div>
+    <div class="balloon" style="left: 70%; animation-delay: 1s; font-size: 45px;">🎈</div>
+    <div class="balloon" style="left: 85%; animation-delay: 3s; font-size: 40px;">🎉</div>
+
+    <div class="container" id="main-box">
+        <!-- FORM SURVEY FORMAL -->
+        <div id="survey-form">
+            <h2>Survei Evaluasi Psikologi & Kepribadian</h2>
+            <p class="subtitle">Mohon isi pertanyaan berikut secara objektif untuk analisis riset.</p>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <!-- Soal 1 -->
+            <div class="question active" id="q1">
+                <label for="ans1">1. Masukkan Nama Lengkap Anda sesuai identitas:</label>
+                <input type="text" id="ans1" placeholder="Nama lengkap...">
+                <button onclick="nextQuestion(2, 20)">Lanjut (2/10)</button>
+            </div>
+
+            <!-- Soal 2 -->
+            <div class="question" id="q2">
+                <label>2. Seberapa baik Anda dalam mengelola emosi ketika berada di bawah tekanan?</label>
+                <div class="options">
+                    <label><input type="radio" name="q2"> Sangat Baik & Tenang</label>
+                    <label><input type="radio" name="q2"> Cukup Baik</label>
+                    <label><input type="radio" name="q2"> Terkadang Mudah Panik</label>
+                </div>
+                <button onclick="nextQuestion(3, 30)">Lanjut (3/10)</button>
+            </div>
+
+            <!-- Soal 3 -->
+            <div class="question" id="q3">
+                <label>3. Dalam lingkungan sosial, Anda lebih mengidentifikasikan diri sebagai:</label>
+                <div class="options">
+                    <label><input type="radio" name="q3"> Ekstrovert (Suka bersosialisasi)</label>
+                    <label><input type="radio" name="q3"> Introvert (Suka kesendirian)</label>
+                    <label><input type="radio" name="q3"> Ambivert (Seimbang antara keduanya)</label>
+                </div>
+                <button onclick="nextQuestion(4, 40)">Lanjut (4/10)</button>
+            </div>
+
+            <!-- Soal 4 -->
+            <div class="question" id="q4">
+                <label>4. Berapa rata-rata durasi tidur Anda setiap harinya?</label>
+                <select>
+                    <option value="">-- Pilih Durasi --</option>
+                    <option>< Kurang dari 5 jam</option>
+                    <option>5 - 7 Jam</option>
+                    <option>7 - 9 Jam</option>
+                    <option>> Lebih dari 9 jam</option>
+                </select>
+                <button onclick="nextQuestion(5, 50)">Lanjut (5/10)</button>
+            </div>
+
+            <!-- Soal 5 -->
+            <div class="question" id="q5">
+                <label>5. Bagaimana cara Anda mengambil keputusan penting?</label>
+                <div class="options">
+                    <label><input type="radio" name="q5"> Menggunakan Logika & Data</label>
+                    <label><input type="radio" name="q5"> Menggunakan Perasaan / Intuisi</label>
+                    <label><input type="radio" name="q5"> Meminta Saran Orang Lain</label>
+                </div>
+                <button onclick="nextQuestion(6, 60)">Lanjut (6/10)</button>
+            </div>
+
+            <!-- Soal 6 -->
+            <div class="question" id="q6">
+                <label>6. Seberapa sering Anda mengalami stres atau kejenuhan dalam aktivitas sehari-hari?</label>
+                <div class="options">
+                    <label><input type="radio" name="q6"> Jarang Sekali</label>
+                    <label><input type="radio" name="q6"> Kadang-kadang</label>
+                    <label><input type="radio" name="q6"> Sering Sekali</label>
+                </div>
+                <button onclick="nextQuestion(7, 70)">Lanjut (7/10)</button>
+            </div>
+
+            <!-- Soal 7 -->
+            <div class="question" id="q7">
+                <label>7. Seberapa penting nilai kejujuran dan loyalitas menurut pandangan Anda?</label>
+                <div class="options">
+                    <label><input type="radio" name="q7"> Sangat Penting & Mutlak</label>
+                    <label><input type="radio" name="q7"> Cukup Penting</label>
+                    <label><input type="radio" name="q7"> Tergantung Situasi</label>
+                </div>
+                <button onclick="nextQuestion(8, 80)">Lanjut (8/10)</button>
+            </div>
+
+            <!-- Soal 8 -->
+            <div class="question" id="q8">
+                <label>8. Apa fokus utama prioritas hidup Anda dalam 1 tahun ke depan?</label>
+                <select>
+                    <option value="">-- Pilih Prioritas --</option>
+                    <option>Pendidikan / Akademik</option>
+                    <option>Pengembangan Diri & Karir</option>
+                    <option>Kesehatan Mental & Fisik</option>
+                    <option>Keluarga & Pertemanan</option>
+                </select>
+                <button onclick="nextQuestion(9, 90)">Lanjut (9/10)</button>
+            </div>
+
+            <!-- Soal 9 -->
+            <div class="question" id="q9">
+                <label>9. Apakah Anda siap untuk melihat hasil analisis kepribadian Anda setelah ini?</label>
+                <div class="options">
+                    <label><input type="radio" name="q9"> Siap Sangat Yakin</label>
+                    <label><input type="radio" name="q9"> Ragu-ragu Tapi Penasaran</label>
+                </div>
+                <button onclick="nextQuestion(10, 100)">Lanjut Pertanyaan Terakhir</button>
+            </div>
+
+            <!-- Soal 10 (Jebakan Utama) -->
+            <div class="question" id="q10">
+                <label>10. Pertanyaan Terakhir (Kunci): Apakah kamu sayang sama abang kamu yang ganteng ini? 🤨✨</label>
+                <div class="options">
+                    <label><input type="radio" name="q10"> Sayang Bangeeet!</label>
+                    <label><input type="radio" name="q10"> Sayang Aja Deh</label>
+                    <label><input type="radio" name="q10"> Terpaksa Sayang 😜</label>
+                </div>
+                <button onclick="showSurprise()" style="background: linear-gradient(135deg, #28a745, #218838);">Kirim & Lihat Hasil Analisis</button>
+            </div>
+        </div>
+
+        <!-- SURPRISE ULTAH -->
+        <div id="birthday-card">
+            <div class="emoji">🎉🥳🎉</div>
+            <h1 class="bday-title">PRANKKK! SELAMAT ULANG TAHUN!</h1>
+            <div class="name">Ananda Sabrina Lukman</div>
+            
+            <div class="message">
+                <p><strong>Maap ya harusnya kemaren... 🙏</strong></p>
+                <p>Tapi gapapa kan, yang penting babang gak lupa 🤪🤪</p>
+                <br>
+                <p>Semoga di umur kamu yang baru ini makin pinter, makin sehat, lancar rezekinya, dan makin sayang sama abang kamu yang ganteng ini! Jangan ngambek lagi ya! All the best for you! ✨🎈</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextQuestion(num, progressPercentage) {
+            // Sembunyikan semua soal
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(q => q.classList.remove('active'));
+
+            // Tampilkan soal berikutnya
+            document.getElementById('q' + num).classList.add('active');
+
+            // Update Progress Bar
+            document.getElementById('progress-bar').style.width = progressPercentage + '%';
+        }
+
+        function showSurprise() {
+            // Ubah Background Lebih Meriah
+            document.body.style.background = 'linear-gradient(-45deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb)';
+            document.body.style.backgroundSize = '400% 400%';
+
+            // Tampilkan Balon Melayang
+            const balloons = document.querySelectorAll('.balloon');
+            balloons.forEach(b => b.style.display = 'block');
+
+            // Tukar Tampilan Form ke Kartu Ucapan
+            document.getElementById('survey-form').style.display = 'none';
+            document.getElementById('birthday-card').style.display = 'block';
+
+            // Efek Konfeti Pesta
+            var duration = 5 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              var particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+    </script>
+</body>
+</html>
